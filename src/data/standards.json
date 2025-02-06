@@ -3119,8 +3119,14 @@
       {
         "type": "textField",
         "required": false,
-        "name": "customGroup",
+        "name": "includecustomGroup",
         "label": "Enter the custom group name if you selected 'Assign to Custom Group'. Wildcards are allowed."
+      },
+      {
+        "type": "textField",
+        "required": false,
+        "name": "ExcludedGroup",
+        "label": "Optionally enter a custom group name to exclude from the policy. Wildcards are allowed."
       }
     ]
   },
