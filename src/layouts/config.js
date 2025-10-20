@@ -456,6 +456,16 @@ export const nativeMenuItems = [
             permissions: ["Endpoint.MEM.*"],
           },
           {
+            title: "Reusable Settings",
+            path: "/endpoint/MEM/list-reusable-settings",
+            permissions: ["Endpoint.MEM.*"],
+          },
+          {
+            title: "Reusable Setting Templates",
+            path: "/endpoint/MEM/reusable-setting-templates",
+            permissions: ["Endpoint.MEM.*"],
+          },
+          {
             title: "Scripts",
             path: "/endpoint/MEM/list-scripts",
             permissions: ["Endpoint.MEM.*"],
