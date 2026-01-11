@@ -25,6 +25,8 @@ const EditReusableSetting = () => {
     },
   });
 
+  const { reset } = formControl;
+
   const settingQuery = ApiGetCall({
     url: "/api/ListIntuneReusableSettings",
     queryKey: ["ListIntuneReusableSettings", effectiveTenant, id],
@@ -36,7 +38,7 @@ const EditReusableSetting = () => {
 
   useEffect(() => {
     if (record) {
-      formControl.reset({
+      reset({
         tenantFilter: effectiveTenant,
         ID: record.id,
         displayName: record.displayName,
@@ -44,7 +46,7 @@ const EditReusableSetting = () => {
         rawJSON: record.RawJSON,
       });
     }
-  }, [record, effectiveTenant]);
+  }, [record, effectiveTenant, reset]);
 
   const safeJson = () => {
     if (!record?.RawJSON) return null;
