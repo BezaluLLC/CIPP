@@ -93,14 +93,14 @@ const EditReusableSettingsTemplate = () => {
         formControl.setValue("parsedRAWJson", sanitizedParsedRaw);
       }
     }
-  }, [groupCollection, sanitizedParsedRaw, formControl]);
+  }, [groupCollection, sanitizedParsedRaw]);
 
   useEffect(() => {
     if (normalizedTemplate) {
       formControl.setValue("displayName", normalizedTemplate.displayName || normalizedTemplate.name);
       formControl.setValue("description", normalizedTemplate.description || normalizedTemplate.Description);
     }
-  }, [normalizedTemplate, formControl]);
+  }, [normalizedTemplate]);
 
   // Custom data formatter to convert autoComplete objects to values and preserve @odata fields
   const customDataFormatter = (values) => {
