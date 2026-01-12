@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Typography, Divider } from "@mui/material";
 import { Grid } from "@mui/system";
 import CippFormComponent from "/src/components/CippComponents/CippFormComponent";
@@ -10,6 +10,15 @@ const CippTemplateFieldRenderer = ({
   formControl,
   templateType = "conditionalAccess",
 }) => {
+  const intuneDefinitionMap = useMemo(() => {
+    const map = new Map();
+    (intuneCollection || []).forEach((def) => {
+      if (def?.id) {
+        map.set(def.id, def);
+      }
+    });
+    return map;
+  }, []);
   // Default blacklisted fields with wildcard support
   const defaultBlacklistedFields = [
     "id",
@@ -274,9 +283,7 @@ const CippTemplateFieldRenderer = ({
                 <Grid container spacing={2}>
                   {(groupEntry?.children || []).map((child, childIndex) => {
                     const childPath = `${fieldPath}.${groupIndex}.children.${childIndex}`;
-                    const intuneDefinition = intuneCollection.find(
-                      (item) => item.id === child?.settingDefinitionId
-                    );
+                    const intuneDefinition = intuneDefinitionMap.get(child?.settingDefinitionId);
                     const childLabel =
                       intuneDefinition?.displayName || child?.settingDefinitionId || `Child ${
                         childIndex + 1
@@ -381,9 +388,7 @@ const CippTemplateFieldRenderer = ({
                 // Handle different setting types
                 if (settingInstance.choiceSettingValue) {
                   // Find the setting definition in the intune collection
-                  const intuneObj = intuneCollection.find(
-                    (item) => item.id === settingInstance.settingDefinitionId
-                  );
+                  const intuneObj = intuneDefinitionMap.get(settingInstance.settingDefinitionId);
 
                   const label = intuneObj?.displayName || `Setting ${index + 1}`;
                   const options =
@@ -409,9 +414,7 @@ const CippTemplateFieldRenderer = ({
 
                 if (settingInstance.simpleSettingValue) {
                   // Find the setting definition in the intune collection
-                  const intuneObj = intuneCollection.find(
-                    (item) => item.id === settingInstance.settingDefinitionId
-                  );
+                  const intuneObj = intuneDefinitionMap.get(settingInstance.settingDefinitionId);
 
                   const label = intuneObj?.displayName || `Setting ${index + 1}`;
 
