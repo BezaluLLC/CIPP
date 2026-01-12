@@ -53,6 +53,10 @@ const EditReusableSetting = () => {
     try {
       return JSON.parse(record.RawJSON);
     } catch (e) {
+      console.error("Failed to parse RawJSON for reusable setting preview", {
+        error: e,
+        recordId: record?.id,
+      });
       return null;
     }
   };
