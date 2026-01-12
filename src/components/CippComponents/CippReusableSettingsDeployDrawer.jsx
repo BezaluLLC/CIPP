@@ -22,6 +22,7 @@ export const CippReusableSettingsDeployDrawer = ({
   const tenantFilter = useSettings()?.tenantFilter;
   const selectedTemplate = useWatch({ control: formControl.control, name: "TemplateList" });
   const rawJson = useWatch({ control: formControl.control, name: "rawJSON" });
+  const selectedTenants = useWatch({ control: formControl.control, name: "tenantFilter" });
 
   const templates = ApiGetCall({ url: "/api/ListIntuneReusableSettingTemplates", queryKey: "ListIntuneReusableSettingTemplates" });
 
@@ -35,24 +36,30 @@ export const CippReusableSettingsDeployDrawer = ({
     }
   }, [templates.isSuccess, templates.data, selectedTemplate]);
 
+  const effectiveTenants = Array.isArray(selectedTenants) && selectedTenants.length > 0
+    ? selectedTenants
+    : tenantFilter
+      ? [tenantFilter]
+      : [];
+
   const deploy = ApiPostCall({
     urlFromData: true,
     relatedQueryKeys: [
       "ListIntuneReusableSettingTemplates",
-      `ListIntuneReusableSettings-${tenantFilter}`,
+      `ListIntuneReusableSettings-${effectiveTenants.join(",")}`,
     ],
   });
 
-  const handleSubmit = () => {
-    formControl.trigger();
-    if (!isValid) {
+  const handleSubmit = async () => {
+    const isFormValid = await formControl.trigger();
+    if (!isFormValid) {
       return;
     }
     const values = formControl.getValues();
     deploy.mutate({
       url: "/api/AddIntuneReusableSetting",
       data: {
-        tenantFilter: values?.tenantFilter,
+        tenantFilter: effectiveTenants,
         TemplateId: values?.TemplateList?.value,
         rawJSON: values?.rawJSON,
       },
