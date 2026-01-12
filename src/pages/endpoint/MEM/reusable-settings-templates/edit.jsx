@@ -191,7 +191,7 @@ const EditReusableSettingsTemplate = () => {
     }
 
     return {
-      GUID: processedValues.GUID || id,
+      GUID: processedValues.GUID || normalizedId,
       displayName: processedValues.displayName,
       description: processedValues.description,
       package: processedValues.package,
@@ -251,7 +251,7 @@ const EditReusableSettingsTemplate = () => {
         "Edit Reusable Settings Template"
       }
       formControl={formControl}
-      queryKey={[`ReusableSettingTemplate-${id}`, "ListIntuneReusableSettingTemplates"]}
+      queryKey={[`ReusableSettingTemplate-${normalizedId}`, "ListIntuneReusableSettingTemplates"]}
       backButtonTitle="Reusable Settings Templates"
       postUrl="/api/AddIntuneReusableSettingTemplate"
       backUrl="/endpoint/MEM/reusable-settings-templates"
