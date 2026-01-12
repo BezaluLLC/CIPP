@@ -10,11 +10,12 @@ import { Grid } from "@mui/system";
 import { CippApiResults } from "./CippApiResults";
 import { useSettings } from "../../hooks/use-settings";
 import { CippFormTenantSelector } from "./CippFormTenantSelector";
+import { PermissionButton as PermissionAwareButton } from "../../utils/permissions";
 
 export const CippReusableSettingsDeployDrawer = ({
   buttonText = "Deploy Reusable Settings",
   requiredPermissions = [],
-  PermissionButton = Button,
+  PermissionButton = PermissionAwareButton,
 }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const formControl = useForm({ mode: "onChange" });
