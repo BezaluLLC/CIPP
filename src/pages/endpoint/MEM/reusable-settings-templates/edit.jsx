@@ -21,21 +21,28 @@ const generateGuid = () => {
 
 const EditReusableSettingsTemplate = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const { id: rawId } = router.query;
   const { currentTenant } = useSettings();
+
+  const normalizedId = useMemo(() => {
+    if (typeof rawId === "string") return rawId;
+    if (Array.isArray(rawId) && rawId.length > 0) return rawId[0];
+    return undefined;
+  }, [rawId]);
 
   const formControl = useForm({
     mode: "onChange",
     defaultValues: {
       tenantFilter: currentTenant,
-      GUID: id,
+      GUID: normalizedId,
     },
   });
 
   const templateQuery = ApiGetCall({
-    url: `/api/ListIntuneReusableSettingTemplates?id=${id}`,
-    queryKey: `ReusableSettingTemplate-${id}`,
-    waiting: !!id,
+    url: "/api/ListIntuneReusableSettingTemplates",
+    data: normalizedId ? { id: normalizedId } : undefined,
+    queryKey: `ReusableSettingTemplate-${normalizedId}`,
+    waiting: !!normalizedId,
   });
 
   const templateData = Array.isArray(templateQuery.data)
@@ -46,14 +53,15 @@ const EditReusableSettingsTemplate = () => {
     if (!templateData) return null;
     return {
       ...templateData,
-      RAWJson: templateData.RawJSON ?? templateData.RAWJson ?? templateData.RAWJSON,
+      // Normalize all known casing variants to the canonical RawJSON property
+      RawJSON: templateData.RawJSON ?? templateData.RAWJson ?? templateData.RAWJSON,
     };
   }, [templateData]);
 
   const parsedRaw = useMemo(() => {
-    if (!normalizedTemplate?.RAWJson) return null;
+    if (!normalizedTemplate?.RawJSON) return null;
     try {
-      return JSON.parse(normalizedTemplate.RAWJson);
+      return JSON.parse(normalizedTemplate.RawJSON);
     } catch (e) {
       return null;
     }
@@ -102,7 +110,13 @@ const EditReusableSettingsTemplate = () => {
     }
   }, [normalizedTemplate]);
 
-  // Custom data formatter to convert autoComplete objects to values and preserve @odata fields
+  /**
+   * Convert RHF form values into the API payload while preserving Graph @odata fields.
+   * - Flattens react-hook-form autocomplete objects to their .value.
+   * - Restores @odata.* keys from the original template to avoid dot-notation loss from RHF.
+   * - Syncs displayName/description into parsed RAW JSON and reinserts the edited groupSettingCollectionValue.
+   * - Builds the final payload expected by /api/AddIntuneReusableSettingTemplate, including tenant fallback.
+   */
   const customDataFormatter = (values) => {
     const extractValues = (obj) => {
       if (obj === null || obj === undefined) return obj;
@@ -193,37 +207,39 @@ const EditReusableSettingsTemplate = () => {
 
   const createEmptyEntry = () => {
     const { idDef, autoresolveDef, keywordDef } = groupChildDefinitions;
-    return {
-      children: [
-        idDef
-          ? {
-              "@odata.type": "#microsoft.graph.deviceManagementConfigurationSimpleSettingInstance",
-              settingDefinitionId: idDef,
-              simpleSettingValue: {
-                "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue",
-                value: generateGuid(),
-              },
-            }
-          : {},
-        autoresolveDef
-          ? {
-              "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
-              settingDefinitionId: autoresolveDef,
-              choiceSettingValue: { value: "", children: [] },
-            }
-          : {},
-        keywordDef
-          ? {
-              "@odata.type": "#microsoft.graph.deviceManagementConfigurationSimpleSettingInstance",
-              settingDefinitionId: keywordDef,
-              simpleSettingValue: {
-                "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue",
-                value: "",
-              },
-            }
-          : {},
-      ],
-    };
+    const children = [];
+
+    if (idDef) {
+      children.push({
+        "@odata.type": "#microsoft.graph.deviceManagementConfigurationSimpleSettingInstance",
+        settingDefinitionId: idDef,
+        simpleSettingValue: {
+          "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue",
+          value: generateGuid(),
+        },
+      });
+    }
+
+    if (autoresolveDef) {
+      children.push({
+        "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+        settingDefinitionId: autoresolveDef,
+        choiceSettingValue: { value: "", children: [] },
+      });
+    }
+
+    if (keywordDef) {
+      children.push({
+        "@odata.type": "#microsoft.graph.deviceManagementConfigurationSimpleSettingInstance",
+        settingDefinitionId: keywordDef,
+        simpleSettingValue: {
+          "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue",
+          value: "",
+        },
+      });
+    }
+
+    return { children };
   };
 
   return (
