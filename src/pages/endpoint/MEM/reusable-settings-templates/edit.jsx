@@ -101,14 +101,14 @@ const EditReusableSettingsTemplate = () => {
         formControl.setValue("parsedRAWJson", sanitizedParsedRaw);
       }
     }
-  }, [groupCollection, sanitizedParsedRaw]);
+  }, [groupCollection, sanitizedParsedRaw, formControl]);
 
   useEffect(() => {
     if (normalizedTemplate) {
       formControl.setValue("displayName", normalizedTemplate.displayName || normalizedTemplate.name);
       formControl.setValue("description", normalizedTemplate.description || normalizedTemplate.Description);
     }
-  }, [normalizedTemplate]);
+  }, [normalizedTemplate, formControl]);
 
   /**
    * Convert RHF form values into the API payload while preserving Graph @odata fields.
@@ -117,7 +117,21 @@ const EditReusableSettingsTemplate = () => {
    * - Syncs displayName/description into parsed RAW JSON and reinserts the edited groupSettingCollectionValue.
    * - Builds the final payload expected by /api/AddIntuneReusableSettingTemplate, including tenant fallback.
    */
-  const customDataFormatter = (values) => {
+  const customDataFormatter = useMemo(() => {
+    const getOriginalValueByPath = (obj, path) => {
+      if (!obj) return undefined;
+      const keys = path.split(".");
+      let current = obj;
+      for (const key of keys) {
+        if (current && typeof current === "object" && key in current) {
+          current = current[key];
+        } else {
+          return undefined;
+        }
+      }
+      return current;
+    };
+
     const extractValues = (obj) => {
       if (obj === null || obj === undefined) return obj;
 
@@ -159,46 +173,34 @@ const EditReusableSettingsTemplate = () => {
       return obj;
     };
 
-    const getOriginalValueByPath = (obj, path) => {
-      if (!obj) return undefined;
-      const keys = path.split(".");
-      let current = obj;
-      for (const key of keys) {
-        if (current && typeof current === "object" && key in current) {
-          current = current[key];
-        } else {
-          return undefined;
+    return (values) => {
+      const processedValues = extractValues(values) || {};
+
+      // Sync template/policy name & description into parsed RAW JSON, and merge edited group collection
+      if (processedValues.parsedRAWJson) {
+        if (processedValues.displayName) {
+          processedValues.parsedRAWJson.displayName = processedValues.displayName;
+        }
+        if (processedValues.description) {
+          processedValues.parsedRAWJson.description = processedValues.description;
+        }
+
+        if (processedValues.groupSettingCollectionValue && processedValues.parsedRAWJson.settingInstance) {
+          processedValues.parsedRAWJson.settingInstance.groupSettingCollectionValue =
+            processedValues.groupSettingCollectionValue;
         }
       }
-      return current;
+
+      return {
+        GUID: processedValues.GUID || normalizedId,
+        displayName: processedValues.displayName,
+        description: processedValues.description,
+        package: processedValues.package,
+        rawJSON: JSON.stringify(processedValues.parsedRAWJson || processedValues, null, 2),
+        tenantFilter: processedValues.tenantFilter || currentTenant,
+      };
     };
-
-    const processedValues = extractValues(values) || {};
-
-    // Sync template/policy name & description into parsed RAW JSON, and merge edited group collection
-    if (processedValues.parsedRAWJson) {
-      if (processedValues.displayName) {
-        processedValues.parsedRAWJson.displayName = processedValues.displayName;
-      }
-      if (processedValues.description) {
-        processedValues.parsedRAWJson.description = processedValues.description;
-      }
-
-      if (processedValues.groupSettingCollectionValue && processedValues.parsedRAWJson.settingInstance) {
-        processedValues.parsedRAWJson.settingInstance.groupSettingCollectionValue =
-          processedValues.groupSettingCollectionValue;
-      }
-    }
-
-    return {
-      GUID: processedValues.GUID || normalizedId,
-      displayName: processedValues.displayName,
-      description: processedValues.description,
-      package: processedValues.package,
-      rawJSON: JSON.stringify(processedValues.parsedRAWJson || processedValues, null, 2),
-      tenantFilter: processedValues.tenantFilter || currentTenant,
-    };
-  };
+  }, [currentTenant, normalizedId, normalizedTemplate]);
 
   const { fields, append, remove } = useFieldArray({
     control: formControl.control,

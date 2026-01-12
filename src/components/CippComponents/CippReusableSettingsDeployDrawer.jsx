@@ -35,7 +35,7 @@ export const CippReusableSettingsDeployDrawer = ({
         formControl.setValue("TemplateId", match.GUID);
       }
     }
-  }, [templates.isSuccess, templates.data, selectedTemplate]);
+  }, [templates.isSuccess, templates.data, selectedTemplate, formControl]);
 
   const effectiveTenants = Array.isArray(selectedTenants) && selectedTenants.length > 0
     ? selectedTenants
