@@ -123,19 +123,27 @@ const ManageDriftPage = () => {
       acc.deniedDeviationsCount += item.deniedDeviationsCount || 0;
 
       // Use the API's direct arrays instead of filtering allDeviations
+      // Tag each deviation with its source template name for traceability
+      const tagWithTemplate = (dev) => ({ ...dev, sourceTemplateName: item.standardName });
       if (item.currentDeviations && Array.isArray(item.currentDeviations)) {
-        acc.currentDeviations.push(...item.currentDeviations.filter((dev) => dev !== null));
+        acc.currentDeviations.push(
+          ...item.currentDeviations.filter((dev) => dev !== null).map(tagWithTemplate),
+        );
       }
       if (item.acceptedDeviations && Array.isArray(item.acceptedDeviations)) {
-        acc.acceptedDeviations.push(...item.acceptedDeviations.filter((dev) => dev !== null));
+        acc.acceptedDeviations.push(
+          ...item.acceptedDeviations.filter((dev) => dev !== null).map(tagWithTemplate),
+        );
       }
       if (item.customerSpecificDeviations && Array.isArray(item.customerSpecificDeviations)) {
         acc.customerSpecificDeviationsList.push(
-          ...item.customerSpecificDeviations.filter((dev) => dev !== null),
+          ...item.customerSpecificDeviations.filter((dev) => dev !== null).map(tagWithTemplate),
         );
       }
       if (item.deniedDeviations && Array.isArray(item.deniedDeviations)) {
-        acc.deniedDeviationsList.push(...item.deniedDeviations.filter((dev) => dev !== null));
+        acc.deniedDeviationsList.push(
+          ...item.deniedDeviations.filter((dev) => dev !== null).map(tagWithTemplate),
+        );
       }
 
       // Extract compliant standards from ComparisonDetails in driftSettings
@@ -201,6 +209,7 @@ const ManageDriftPage = () => {
             return {
               standardName: standardName,
               standardDisplayName: displayName, // Set display name if found from templates
+              sourceTemplateName: item.standardName,
               state: "aligned",
               Status: "Aligned",
               ComplianceStatus: detail.ComplianceStatus,
@@ -990,12 +999,24 @@ const ManageDriftPage = () => {
                 </Box>
               ) : null}
 
-              {(deviation.Reason ||
+              {(deviation.sourceTemplateName ||
+                deviation.Reason ||
                 deviation.lastChangedByUser ||
                 processedDriftData.latestDataCollection) && (
                 <>
                   <Divider />
                   <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+                    {deviation.sourceTemplateName && (
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{ fontWeight: 600, color: "text.secondary" }}
+                        >
+                          Source Template
+                        </Typography>
+                        <Typography variant="body2">{deviation.sourceTemplateName}</Typography>
+                      </Box>
+                    )}
                     {deviation.Reason && (
                       <Box sx={{ minWidth: 0 }}>
                         <Typography
