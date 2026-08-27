@@ -1,0 +1,104 @@
+{
+  "description": "Returns aggregated AI web usage from Defender for Endpoint DeviceNetworkEvents. This endpoint does not use Defender for Cloud Apps Cloud Discovery or CloudAppEvents.",
+  "responses": {
+    "200": {
+      "description": "Aggregated AI web usage for the requested tenant and period.",
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["summary", "byCategory", "byRisk", "topTools", "webUsage"],
+            "properties": {
+              "summary": {
+                "type": "object",
+                "required": ["aiToolsDetected", "webConnections", "activeUsers", "activeDevices", "period", "periodDays", "source", "dataTable"],
+                "properties": {
+                  "aiToolsDetected": { "type": "integer" },
+                  "webConnections": { "type": "integer" },
+                  "activeUsers": { "type": "integer" },
+                  "activeDevices": { "type": "integer" },
+                  "period": { "type": "string", "enum": ["D7", "D30"] },
+                  "periodDays": { "type": "integer", "enum": [7, 30] },
+                  "source": { "type": "string", "const": "Microsoft Defender for Endpoint" },
+                  "dataTable": { "type": "string", "const": "DeviceNetworkEvents" },
+                  "queryWindow": { "type": "string" },
+                  "resultLimit": { "type": "integer" },
+                  "eventsReturned": { "type": "integer" },
+                  "resultsTruncated": { "type": "boolean" },
+                  "catalogDomains": { "type": "integer" },
+                  "noDataReason": { "type": ["string", "null"] }
+                }
+              },
+              "byCategory": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["category", "tools", "connections"],
+                  "properties": {
+                    "category": { "type": "string" },
+                    "tools": { "type": "integer" },
+                    "connections": { "type": "integer" }
+                  }
+                }
+              },
+              "byRisk": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["risk", "tools", "connections"],
+                  "properties": {
+                    "risk": { "type": "string" },
+                    "tools": { "type": "integer" },
+                    "connections": { "type": "integer" }
+                  }
+                }
+              },
+              "topTools": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "aiTool": { "type": "string" },
+                    "category": { "type": "string" },
+                    "risk": { "type": "string" },
+                    "status": { "type": "string" },
+                    "connections": { "type": "integer" },
+                    "activeUsers": { "type": "integer" },
+                    "devices": { "type": "integer" }
+                  }
+                }
+              },
+              "webUsage": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["aiTool", "vendor", "category", "risk", "status", "connections", "activeUsers", "devices"],
+                  "properties": {
+                    "aiTool": { "type": "string" },
+                    "vendor": { "type": "string" },
+                    "category": { "type": "string" },
+                    "risk": { "type": "string" },
+                    "catalogRisk": { "type": "string" },
+                    "status": { "type": "string" },
+                    "domains": { "type": "string" },
+                    "connections": { "type": "integer" },
+                    "activeUsers": { "type": "integer" },
+                    "devices": { "type": "integer" },
+                    "firstSeen": { "type": ["string", "null"], "format": "date-time" },
+                    "lastSeen": { "type": ["string", "null"], "format": "date-time" },
+                    "topUsers": { "type": "array", "items": { "type": "object" } },
+                    "topDevices": { "type": "array", "items": { "type": "object" } },
+                    "usageEvents": { "type": "array", "items": { "type": "object" } },
+                    "toolDescription": { "type": "string" },
+                    "riskReason": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-cipp-override-reason": "The endpoint returns one aggregate object containing summary, chart datasets, and table rows; the generator defaults unknown response bodies to arrays."
+}
