@@ -528,6 +528,11 @@ export const nativeMenuItems = [
             path: '/copilot/reports/copilot-usage',
             permissions: ['Tenant.Standards.*'],
           },
+          {
+            title: 'AI Web Usage',
+            path: '/copilot/reports/ai-web-usage',
+            permissions: ['Tenant.Standards.*'],
+          },
         ],
       },
     ],

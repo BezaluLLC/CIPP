@@ -254,6 +254,7 @@
     * [Sensitive Info Type Templates](user-documentation/security/compliance/sit-templates.md)
 * [Copilot & AI](user-documentation/copilot/README.md)
   * [Shadow AI Discovery](user-documentation/copilot/shadow-ai.md)
+  * [AI Web Usage](user-documentation/copilot/ai-web-usage.md)
   * [Copilot Settings](user-documentation/copilot/settings.md)
   * [Agent365](user-documentation/copilot/agent365/README.md)
     * [Packages](user-documentation/copilot/agent365/packages.md)
